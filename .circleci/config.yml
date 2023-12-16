@@ -1,0 +1,35 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: docker:20.10.8
+
+    steps:
+      - checkout
+
+      # Set up Docker Compose
+      - run:
+          name: Install Docker Compose
+          command: |
+            apk --update add docker-compose
+
+      # Build and push Docker image
+      - run:
+          name: Build and Push Docker Image
+          command: |
+            docker build -t lanrewadge/apply:${CIRCLE_SHA1} .
+            docker tag lanrewadge/apply:${CIRCLE_SHA1} your-docker-username/your-app-name:latest
+            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+            docker push lanrewadge/apply:${CIRCLE_SHA1}
+            docker push lanrewadge/apply:latest
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - main
