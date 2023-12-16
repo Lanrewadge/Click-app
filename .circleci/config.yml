@@ -1,36 +1,35 @@
-orbs:
-  docker: circleci/docker@1.5.0
-
 version: 2.1
 
-executors:
-  docker-publisher:
-    environment:
-      IMAGE_NAME: lanrewadge/apply
-    docker:
-      - image: circleci/node:latest
-    auth:
-      username: $DOCKER_USERNAME
-      password: $DOCKER_PASSWORD
-
 jobs:
-  publishLatestToHub:
-    executor: docker-publisher
+  build:
+    docker:
+      - image: python:3.8-slim
+
     steps:
       - checkout
-      - setup_remote_docker
+
+      # Install Docker
       - run:
-          name: Publish Docker Image to Docker Hub
+          name: Install Docker
           command: |
-            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker build -t $IMAGE_NAME .
-            docker push $IMAGE_NAME:latest
+            apt-get update
+            apt-get install -y docker.io
+
+      # Build and push Docker image
+      - run:
+          name: Build and Push Docker Image
+          command: |
+            docker build -t lanrewadge/apply:${CIRCLE_SHA1} .
+            docker tag lanrewadge/apply:${CIRCLE_SHA1} lanrewadge/apply:latest
+            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+            docker push lanrewadge/apply:${CIRCLE_SHA1}
+            docker push lanrewadge/apply:latest
 
 workflows:
   version: 2
-  build-master:
+  build:
     jobs:
-      - publishLatestToHub:
+      - build:
           filters:
             branches:
               only:
