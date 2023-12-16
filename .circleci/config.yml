@@ -19,7 +19,7 @@ jobs:
           name: Build and Push Docker Image
           command: |
             docker build -t lanrewadge/apply:${CIRCLE_SHA1} .
-            docker tag lanrewadge/apply:${CIRCLE_SHA1} your-docker-username/your-app-name:latest
+            docker tag lanrewadge/apply:${CIRCLE_SHA1} lanrewadge/apply:latest
             echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
             docker push lanrewadge/apply:${CIRCLE_SHA1}
             docker push lanrewadge/apply:latest
